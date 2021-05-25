@@ -1,0 +1,426 @@
+---
+title: "Watching Videos at Different Times"
+author: "Weixin Zhao"
+date: "May 2021"
+output: html_document
+---
+<br>
+
+<br>
+
+# **1 Introduction**
+- - - 
+
+## 1.1 Background
+
+*Project motivation:*
+
+In terms of **PSY6422 Data Management and Visualisation** project, I searched for open dataset about social media out of my interest.
+
+Social media has a tremendous impact on our daily life for decades. Particular in recent years, short videos from social media become a popular form of entertainment. It allows users to shoot novel videos, watch videos with strange filters, share with others, and so on. It is worth studying in this aspect.
+
+```{r ,echo=FALSE, out.width="50%",fig.align="center",message=FALSE}
+library(here)
+graph1<-here("illustration","media.jpg")
+knitr::include_graphics(graph1)
+```
+
+<br>
+
+*Programming environment:*
+ 
+ +  Software environment: [R](https://www.r-project.org/) version 4.1.0
+ +  Integrated development environment: [RStudio](https://www.rstudio.com/) version 1.4.1103
+ +  File type: Rmarkdown
+ +  Output: html_document
+ +  Packages: 
+
+```{r,echo=TRUE,results='hide',error=FALSE,message=FALSE,warning=FALSE}
+# load the packages used in this project.
+library(here)
+library(knitr)
+library(gifski)
+library(ggplot2)
+library(gganimate)
+library(tidyverse)
+```
+
+<br>
+
+## 1.2 Data Origin
+
+The data **train_age_dataset.csv** is sourced from [Kaggle](https://www.kaggle.com/adityak80/trell-social-media-usage-data), published by a user named Aditya kumar on 4th, Dec 2020. 
+
+It contains 27 columns and 488877 data entries. The following table provides a description of the data.
+
+<p style="text-align:center;">**Data Description** </p>
+
+| Variable | Description | 
+|----:|:-----------|
+|userId|Unique number given to each user.|  
+|tier|Tier of the city in which the user is residing.|  
+|gender|Categorical features. 1= male; 2= female.|
+|following_rate|Number of accounts followed by the user(feature is normalized)|
+|followers_avg_age|Average of age groups of all the followers of the user.|
+|following_avg_age|Average of age groups of all the accounts followed by the user.|
+|max_repetitive_punc|Maximum repititive punctuations found in the bio and comments of the user.|
+|num_of_hashtags_per_action|Average nubmer of hashtags used by the user per comment.|
+|emoji_count_per_action|Average number of emojis used by the user per comment.|
+|punctuations_per_action|Average number of punctuations used by the user per comment.|
+|number_of_words_per_action|Average number of words used by the user per comment.|
+|avgCompletion|Average watch time completion rate of the videos.|
+|avgTimeSpent|Average time spent by the user on a video in seconds.|
+|avgDuration|Average duration of the videos that the user has watched till date.|
+|avgComments|Average number of comments per video watched.|
+|creations|Total number of videos uploaded by the user.|
+|content_views|Total number of videos watched.|
+|num_of_comments|Total number of comments made by the user (normalized)|
+|weekends_trails_watched_per_day|Number of videos watched on weekends per day.|
+|weekdays_trails_watched_per_day|Number of videos watched on weekdays per day.
+|slot1_trails_watched_per_day|The day is divided into 4 slots. The average number of videos watched in this particular time slot.|
+|slot2_trails_watched_per_day|The day is divided into 4 slots. The average number of videos watched in this particular time slot.|
+|slot3_trails_watched_per_day|The day is divided into 4 slots. The average number of videos watched in this particular time slot.|
+|slot4_trails_watched_per_day|The day is divided into 4 slots. The average number of videos watched in this particular time slot.|
+|avgt2|Average number of followers of all the accounts followed by the user.|
+|age_group|Categorical features.1= /<18y; 2= 18~24y;3= 24~30y; 4= />30y.|
+  
+
+
+<br>
+
+
+```{r}
+# load the data and name it as "train"
+train<-read.csv(here("data","train_age_dataset.csv"))
+
+# check the missing values
+sum(is.na(train)) 
+
+# check the first 5 rows of train
+head(train, rows=5)
+```
+
+<br>
+
+## 1.3 Research Questions
+
+After checking the data, I am interested in people of different ages watching videos at different times. 
+
+Therefore, there are two questions generated:
+
+(1) **Are there differences in the number of videos watched on weekdays and weekends in different age groups?**  
+
+<br>
+
+(2) **What is the change in the number of videos watched during the 4 time slots of the day in different age groups?**  
+
+<br>
+
+<br>
+
+<br>  
+
+# **2 Data Preparations and Visualisations**
+_ _ _
+
+## 2.1 Difference in the number of videos watched on weekdays and weekends in different age groups
+
+**Step 1** Data preparation:
+
+```{r}
+# create a new data including the variables used to visualise
+df1<- train %>% 
+  select(age_group,
+         weekdays_trails_watched_per_day,
+         weekends_trails_watched_per_day) %>% 
+  
+  # calculate the mean of the videos watched on weekdays and weekends by different age groups
+  group_by(age_group) %>% 
+  summarise(weekdays = mean(weekdays_trails_watched_per_day),
+            weekends = mean(weekends_trails_watched_per_day)) %>% 
+  
+  # reorganize df1 into long data
+  gather(key = "time",value = "mean",-age_group)
+
+# check the first 5 rows of df1
+kable(head(df1),align= "c", digits= 3)
+```
+
+<br>
+
+**Step 2** Codes for visualisation:
+
+```{r}
+# visualise df1
+fig1<-ggplot(df1, aes(x=age_group,y=mean,fill=time))+
+  
+  # make the bars
+  geom_bar(stat="identity", position="dodge", width=0.8)+
+  
+  # set the colors of the bars
+  scale_fill_manual(values = c("#D1C1B7","#869DA7"))+
+  
+  # add the title
+  ggtitle("Difference in the number of videos watched on weekdays and weekends")+
+  
+  # label the x axis and y axis
+  labs(x="Age group",y="Average number of videos watched")+
+  
+  # set scale of x axis
+  scale_x_continuous(breaks=c(1,2,3,4), 
+                     labels=c("<18y","18~24y","24~30y",">30y"))+  
+  
+  # set scale of y axis
+  scale_y_continuous(limits=c(0,0.20),
+                     breaks=seq(0,0.20, by = 0.05))+
+  
+  # set the theme 
+  theme_light()+
+  
+  # set the elements
+  theme(plot.title = element_text(size = 12, face = "bold"),
+        legend.position = "bottom",
+        legend.text = element_text(size = 10),
+        panel.grid.major = element_line(color = "lightgrey"),
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(size = 8),
+        axis.title = element_text(size = 12))
+```
+
+<br>
+
+**Step 3** Present the graph:
+
+```{r,echo=FALSE}
+# present fig1
+fig1
+```
+
+<span style="font-family:Time News Roman;font-size:14px">
+*Figure1. Difference in the number of videos watched on weekdays and weekends by different age groups.*
+</span>
+<br>
+
+The *Figure 1* shows that
+
+(1) On average, those under 18 years old watch the least videos, while people over 30 years old watch the most videos. There may be a positive correlation between the number of videos watched and age.
+
+(2) The maximum difference in the number of videos watched on weekdays and weekends is among people who are 18~24 year old.
+
+<br>
+
+**Step 4** Save the graph:
+
+```{r,echo=TRUE,results='hide',error=FALSE,message=FALSE,warning=FALSE}
+# save the graph in the folder named "figures"
+ggsave(plot = fig1, path = here("figures"), filename = "fig1.png")
+```
+
+<br>
+
+<br>
+
+## 2.2 Change in the number of videos watched during the 4 time slots of the day in different age groups
+
+**Step 1** Data preparation:
+
+```{r}
+# create a new data including the variables used to visualise
+df2<- train %>% 
+  select(age_group,
+         slot1_trails_watched_per_day,
+         slot2_trails_watched_per_day,
+         slot3_trails_watched_per_day,
+         slot4_trails_watched_per_day) %>% 
+  
+  # calculate the mean of the videos watched in each time slot by different age groups
+  group_by(age_group) %>% 
+  summarise(Slot1 = mean(slot1_trails_watched_per_day),
+            Slot2 = mean(slot2_trails_watched_per_day),
+            Slot3 = mean(slot3_trails_watched_per_day),
+            Slot4 = mean(slot4_trails_watched_per_day)) %>% 
+  
+  # reorganize df2 into long data
+  gather(key = "timeslot",value = "mean",-age_group)
+
+# recode the values of age_group
+attach(df2)
+df2$age_group[age_group == 1]<- "<18y"
+df2$age_group[age_group == 2]<- "18~24y"
+df2$age_group[age_group == 3]<- "24~30y"
+df2$age_group[age_group == 4]<- ">30y"
+detach(df2)
+
+# order the value of age_group
+df2$age_group<- factor(df2$age_group, levels = c("<18y","18~24y","24~30y",">30y"))
+
+# check the first 5 rows of df2
+kable(head(df2),align= "c", digits= 3)
+```
+
+<br>
+
+**Step 2** Codes for visualisations:
+
+```{r}
+# visualise df2 in static way
+fig2_1<-ggplot(df2,aes(x=timeslot,y=mean, group=age_group))+
+  
+  # make the lines
+  geom_line(aes(colour=age_group),size=1)+
+  
+  # set the colours of the lines
+  scale_colour_manual(values = c("#D1C1B7","#9E8E84","#2B2A29","#869DA7"))+
+  
+  # add the title
+  ggtitle("Static change in the number of videos watched during the 4 time slots of the day")+
+  
+  # label the x axis and y axis
+  labs(x="Timeslot",y="Average number of videos watched")+
+  
+  # set scale of y axis
+  scale_y_continuous(limits=c(0,0.35),
+                     breaks=seq(0,0.35, by = 0.05))+
+  
+  # set the theme
+  theme_light()+
+  
+  # unify the elements with silght adjustments
+  theme(plot.title = element_text(size = 12, face = "bold"),
+        legend.position = "right",
+        legend.text = element_text(size = 10),
+        panel.grid.major = element_line(colour = "lightgrey"),
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(size = 8),
+        axis.title = element_text(size = 12))
+```
+
+<br>
+
+```{r}
+# visualise df2 in dynamic way
+fig2_2<-ggplot(df2,aes(x=age_group,y=mean,fill=age_group))+
+  
+  # make the bars
+  geom_bar(stat="identity", width=0.8)+
+  
+  # set the colours of the bars
+  scale_fill_manual("age_group",
+                    values = c("<18y" = "#D1C1B7","18~24y" = "#9E8E84",
+                               "24~30y" = "#2B2A29",">30y" = "#869DA7"))+
+  
+  # label the title and axes
+  labs(title = "Dynamic change in the number of videos watched during the 4 time slots of the day",
+       subtitle = "Time:{closest_state}",
+       x= "Age group", y= "Average number of videos watched")+
+  
+  # set scale of y axis
+  scale_y_continuous(limits=c(0,0.35),
+                     breaks=seq(0,0.35, by = 0.05))+
+  
+  # set the theme
+  theme_light()+
+  
+  # unify the elements with silght adjustments
+  theme(plot.title = element_text(size = 11, face = "bold"),
+        legend.position = "none",
+        legend.text = element_text(size = 10),
+        panel.grid.major = element_line(colour = "lightgrey"),
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(size = 8),
+        axis.title = element_text(size = 12))+
+  
+  # animate the graph
+  transition_states(states = timeslot, transition_length = 6,state_length = 2)+
+  ease_aes("exponential-in-out")
+
+gif2_2<- animate(fig2_2)
+```
+
+<br>
+
+**Step 3** Present the graphs:
+
+```{r, echo=FALSE}
+# present fig2_1 
+fig2_1
+```
+
+<span style="font-family:Time News Roman;font-size:14px">
+*Figure 2. Static change in the number of videos watched during the 4 time slots of the day by different age groups.*
+</span>
+<br>
+
+```{r, echo=FALSE}
+# present gif2_2
+gif2_2
+```
+
+<span style="font-family:Time News Roman;font-size:14px">
+*Figure3. Dynamic change in the number of videos watched during the 4 time slots of the day by different age groups.*
+</span>
+<br>
+
+The *Figure 2* and *Figure 3* indicate that:
+
+(1)	Regardless of any ages, people watch the minor videos at time slot 1 , whereas watching the most videos at time slot 4.
+
+(2)	Regardless of any time slots, over 30-year-olds watch the most videos, while people under 18 yeas olds watch the least videos. There may be a positive correlation between the number of video watched and age.
+
+(3)	From time slot1 to time slot 2, the number of videos watched increases dramatically among all age groups.
+
+(4) From time slot 2 to time slot 4, the number of videos watched climbs stably among those under 30-year-olds. At the same time, the number of videos watched rises significantly among those over 30-year-olds.
+
+<br>
+
+**Step 4** Save the graphs:
+
+```{r,echo=TRUE,results='hide',error=FALSE,message=FALSE,warning=FALSE}
+# save the graphs in the folder named "figures"
+ggsave(plot = fig2_1, path = here("figures"), filename = "fig2_1.png")
+
+anim_save(plot = gif2_2, path = here("figures"), filename = "fig2_2.gif")
+```
+
+<br>
+
+<br>
+
+<br>
+
+# **3 Summary**
+- - - 
+
+To sum up, the visualisations present the differences in the number of videos watched at different times among different age groups. People aged 18 to 24 years old have a remarkable difference in the number of videos watched on weekdays versus weekends. The tremendous change in the number of videos watched within a day exists in the group over 30 years old. 
+
+<br>
+
+Notably, watching more videos does not indicate spending more time on videos. For future visualisation, *avgTimeSpent* (i.e., Average time spent by the user on a video) can be considered to investigate whether there is a difference in time of expenditures on videos among different age groups. 
+
+<br>
+
+Moreover, there are many variables in the data, including several aspects of behaviour on social media. In the future, it is worthy of investigating the activities of comment, such as the number of emoji used per comment, among different age, gender, city, etc.
+
+<br>
+
+The data is not suitable to interpret the outcomes because of treated values and the lack of a more detailed description. However, as it contains a lot of content, it is an acceptable choice for practising visualisation.
+
+
+<br>
+
+<br>
+
+<br>
+
+### *Notes*
+- - - 
+
+(1)	The illustration is sourced from [Unplash](https://unsplash.com/photos/FPt10LXK0cg), published by a user named ROBIN WORRALL (@robin_rednine).
+
+(2)	The colour scheme is generated in a semi-random way by [Colormind](http://colormind.io/image/) based on the illustration.
+
+(3)	The repo for this project are available online via [GitHub](https://github.com/wxzhao17/PSY6422).
+
+<br>
+
+<br>
