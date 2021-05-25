@@ -1,7 +1,7 @@
 # Project for PSY6422 Data Management and Visualisation
 It is the repository of PSY6422 Project "Watching Videos at Different Times".
 
-There are all the files in the project, including the R markdown fle, raw data, codebook, figures generated, and illustration.
+There are all the files in the project, including the R markdown file, raw data, codebook, figures generated, etc.
 
 
 ## Project Structure
