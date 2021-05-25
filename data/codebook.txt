@@ -1,0 +1,35 @@
+# Data set：train_age_dataset.csv
+
+Source：https://www.kaggle.com/adityak80/trell-social-media-usage-data
+
+Dataset Information：
+Number of variables: 27 
+Number of observations: 488877
+
+0. Unnamed:0
+1. userId: Unique number given to each user.
+2. tier: Tier of the city in which the user is residing.
+3. gender: Categorical features. 1= male; 2= female.
+4. following_rate: Number of accounts followed by the user(feature is normalized).
+5. followers_avg_age: Average of age groups of all the followers of the user.
+6. following_avg_age: Average of age groups of all the accounts followed by the user.
+7. max_repetitive_punc: Maximum repititive punctuations found in the bio and comments of the user.
+8. num_of_hashtags_per_action: Average nubmer of hashtags used by the user per comment.
+9. emoji_count_per_action: Average number of emojis used by the user per comment.
+10. punctuations_per_action: Average number of punctuations used by the user per comment.
+11. number_of_words_per_action: Average number of words used by the user per comment.
+12. avgCompletion: Average watch time completion rate of the videos.
+13. avgTimeSpent: Average time spent by the user on a video in seconds.
+14. avgDuration: Average duration of the videos that the user has watched till date.
+15. avgComments: Average number of comments per video watched.
+16. creations: Total number of videos uploaded by the user.
+17. content_views: Total number of videos watched.
+18. num_of_comments: Total number of comments made by the user (normalized).
+19. weekends_trails_watched_per_day: Number of videos watched on weekends per day.
+20. weekdays_trails_watched_per_day: Number of videos watched on weekdays per day.
+21. slot1_trails_watched_per_day: The day is divided into 4 slots. The average number of videos watched in this particular time slot.
+22. slot2_trails_watched_per_day: The day is divided into 4 slots. The average number of videos watched in this particular time slot.
+23. slot3_trails_watched_per_day: The day is divided into 4 slots. The average number of videos watched in this particular time slot.
+24. slot4_trails_watched_per_day: The day is divided into 4 slots. The average number of videos watched in this particular time slot.
+25. avgt2: Average number of followers of all the accounts followed by the user.
+26. age_group:Categorical features.1= /<18y; 2= 18~24y;3= 24~30y; 4= />30y.
